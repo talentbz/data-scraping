@@ -16,16 +16,23 @@ def get_price(soup):
 
     return price
 
-# get stock
+# get availability
 def get_availability(soup):
+    stock = soup.find('select', attrs={'id': 'quantity'})
     try:
-        available = soup.find("div", attrs={'id': 'availability'})
-        available = available.find("span").string.strip()
+        stock = str(len(stock.find_all('option')))
 
     except AttributeError:
-        available = "Not Available"
+        try:
+            stock = soup.find("div", attrs={'id': 'availability'})
+            stock = stock.find("span").string.strip()
+            if stock:
+                stock = "1"
+        except:
+            stock = "Not Available"
 
-    return available
+    return stock
+
 
 if __name__ == '__main__':
 
@@ -48,12 +55,13 @@ if __name__ == '__main__':
         amazon_url = "https://www.amazon.com/dp/" + asin  # The general
         webpage = requests.get(amazon_url, headers=headers)
         # Soup Object containing all data
-        new_soup = BeautifulSoup(webpage.content, "lxml")
-        #price_data = new_soup.find('span', attrs={'id': 'priceblock_ourprice'})
+        new_soup = BeautifulSoup(webpage.content, "html.parser")
+
         i+=1
         print(i)
         print(asin)
         print(get_price(new_soup))
         print(get_availability(new_soup))
         f.write(asin + ',' + get_price(new_soup) + ',' + get_availability(new_soup) + '\n')
+
     f.close()
